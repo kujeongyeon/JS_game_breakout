@@ -1,36 +1,110 @@
-<!DOCTYPE html>
-<html>
+﻿<!DOCTYPE html>
+<<html lang="en">
 <head>
-    <meta charset="utf-8"/>
+    <meta charset="utf-8" />
     <title>Came Canvas Workshop</title>
     <style>
-        canvas { background: #eee; display:block; margin: 0 auto;}
+        canvas {
+            background: #eee;
+            display: block;
+            margin: 0 auto;
+        }
     </style>
 </head>
 <body>
     <canvas id="myCanvas" width="480" height="320"></canvas>
+
     <script>
         var canvas = document.getElementById("myCanvas");
-        //canvas ������Ʈ�� ���� ������ canvas������ ����
+        //canvas 엘리먼트에 대한 참조를 canvas변수에 저장
         var ctx = canvas.getContext("2d");
-        //ĵ������ �׸��� ���� ���Ǵ� ������ 2D rendering context�� ctx�� ����
-        ctx.beginPath();
-        ctx.rect(20, 40, 50, 50);
-        ctx.fillStyle = "#FF0000";
-        ctx.fill();
-        ctx.closePath();
+        //캔버스에 그리기 위해 사용되는 도구인 2D rendering context를 ctx에 저장
 
-        ctx.beginPath();
-        ctx.arc(240, 160, 20, 0, Math.PI * 2, false);
-        ctx.fillStyle = "green";
-        ctx.fill();
-        ctx.closePath();
+        var x = canvas.width / 2;
+        var y = canvas.height - 30;
+        var dx = 2;
+        var dy = -2;
 
-        ctx.beginPath();
-        ctx.rect(160, 10, 100, 40);
-        ctx.strokeStyle = "rgba(0, 0, 255, 0.5)";
-        ctx.stroke();
-        ctx.closePath();
+        var ballRadius = 10;
+        //원의 반지름
+
+        var paddleHeight = 10;
+        var paddleWidth = 75;
+        var paddleX = (canvas.width - paddleWidth) / 2;
+        //x 축 위에 시작지점
+
+        var rightPressed = false;
+        var leftPressed = false;
+        //왼쪽, 오른쪽 컨트롤 버튼이 눌렸는지 확인하는 변수
+
+        function drawBall() {
+            ctx.beginPath();
+            ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+            //원의 중심 x,y ,반지름, 시작각도, 끝각도, 그리는방향(false는 시계방향)
+            ctx.fillStyle = "#0095DD";
+            ctx.fill();
+            ctx.closePath();
+        }
+        function drawPaddle() {
+            ctx.beginPath();
+            ctx.rect(paddleX, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+            ctx.fillStyle = "#0095DD";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBall();
+            drawPaddle();
+
+            if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
+                dx = -dx;
+            }
+
+            if (y + dy > canvas.height - ballRadius || y + dy < ballRadius) {
+                dy = -dy;
+            }
+
+            x += dx;
+            y += dy;
+
+            if (rightPressed && paddleX < canvas.width - paddleWidth) {
+                paddleX += 4;
+            }
+            else if (leftPressed && paddleX > 0) {
+                paddleX -= 4;
+            }
+
+        }
+
+        document.addEventListener("keydown", keyDownHandler, false);
+        document.addEventListener("keyup", keyUpHandler, false);
+        //키가 눌렸음을 인식하기 위해 이벤트 리스너 설정
+
+        function keyDownHandler(e) {
+            if (e.keyCode == 39) {
+                rightPressed = true;
+            }
+            else if (e.keyCode == 37) {
+                leftPressed = true;
+            }
+        }
+
+        function keyUpHandler(e) {
+            if (e.keyCode == 39) {
+                rightPressed = false;
+            }
+            else if (e.keyCode == 37) {
+                leftPressed = false;
+            }
+        }
+
+        setInterval(draw, 10);
+        //draw()함수는 10밀리초마다 영원히 호출됨
+        //공은 매 프레임마다 다시 그려진다
+
+
     </script>
 </body>
 </html>

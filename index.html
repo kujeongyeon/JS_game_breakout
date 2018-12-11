@@ -1,5 +1,5 @@
 ﻿<!DOCTYPE html>
-<<html lang="en">
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <title>Came Canvas Workshop</title>
@@ -37,6 +37,28 @@
         var leftPressed = false;
         //왼쪽, 오른쪽 컨트롤 버튼이 눌렸는지 확인하는 변수
 
+        var brickRowCount = 3;
+        var brickColumnCount = 5;
+        //벽돌의 행과 열
+        var brickWidth = 75;
+        var brickHeight = 20;
+        //폭과 높이
+        var brickPadding = 10;
+        //벽돌 사이 간격
+        var brickOffsetTop = 30;
+        var brickOffsetLeft = 30;
+        //위쪽과 왼쪽 간격 띄우기
+
+        var bricks = [];
+        for (var c = 0; c < brickColumnCount; c++) {
+            bricks[c] = [];
+            for (var r = 0; r < brickRowCount; r++) {
+                bricks[c][r] = { x: 0, y: 0, status: 1 };
+            }
+        }
+        //벽돌을 2차원 배열로 만들고 x,y 의 위치 객체를 포함
+        //벽돌을 초기화하는 코드에 status 속성을 각 벽돌 객체에 추가
+
         function drawBall() {
             ctx.beginPath();
             ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
@@ -52,22 +74,48 @@
             ctx.fill();
             ctx.closePath();
         }
+        function drawBricks() {
+            for (var c = 0; c < brickColumnCount; c++) {
+                for (var r = 0; r < brickRowCount; r++) {
+
+                    if (bricks[c][r].status == 1) {
+                        var brickX = (c * (brickWidth + brickPadding)) + brickOffsetLeft;
+                        var brickY = (r * (brickHeight + brickPadding)) + brickOffsetTop;
+                        bricks[c][r].x = brickX;
+                        bricks[c][r].y = brickY;
+                        ctx.beginPath();
+                        ctx.rect(brickX, brickY, brickWidth, brickHeight);
+                        ctx.fillStyle = "#0095DD";
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+            }
+        }
+        //만약 status가 1이라면 벽돌을 그리고, 만약 0이라면 이미
+        //공이 치고간 벽돌이므로 우린 더이상 화면에 그릴 필요가 없습니다
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBricks();
             drawBall();
             drawPaddle();
+          
 
             if (x + dx > canvas.width - ballRadius || x + dx < ballRadius) {
                 dx = -dx;
             }
 
-            if (y + dy > canvas.height - ballRadius || y + dy < ballRadius) {
+            if (y + dy < ballRadius) {
                 dy = -dy;
+            } else if (y + dy > canvas.height - ballRadius) {
+                if (x > paddleX && x < paddleX + paddleWidth) {
+                    dy = -dy;
+                } else {
+                    alert("GAME OVER");
+                    document.location.reload();
+                }
             }
-
-            x += dx;
-            y += dy;
 
             if (rightPressed && paddleX < canvas.width - paddleWidth) {
                 paddleX += 4;
@@ -76,11 +124,30 @@
                 paddleX -= 4;
             }
 
+            collisionDetection();
+
+            x += dx;
+            y += dy;
+
         }
 
         document.addEventListener("keydown", keyDownHandler, false);
         document.addEventListener("keyup", keyUpHandler, false);
         //키가 눌렸음을 인식하기 위해 이벤트 리스너 설정
+
+        function collisionDetection() {
+            for (var c = 0; c < brickColumnCount; c++) {
+                for (var r = 0; r < brickRowCount; r++) {
+                    var b = bricks[c][r];
+                    if(b.status == 1) {
+                        if (x > b.x && x < b.x + brickWidth && y > b.y && y < b.y + brickHeight) {
+                            dy = -dy;
+                            b.status = 0;
+                        }
+                    }
+                }
+            }
+        }
 
         function keyDownHandler(e) {
             if (e.keyCode == 39) {
